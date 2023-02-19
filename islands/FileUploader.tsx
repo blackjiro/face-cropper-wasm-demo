@@ -14,15 +14,22 @@ const loadWasm = async () => {
   return wasm
 }
 
+type Wasm = {
+  add: (a: number, b: number) => number
+  load_image: (data: Uint8Array) => number
+}
+
 export default function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
-  const [wasm, setWasm] = useState<any>()
+  const [wasm, setWasm] = useState<Wasm>()
   useEffect(() => loadWasm().then(wasm=>setWasm(wasm)), [])
 
   const loadImage = () => {
-    if (!file) return;
+    if (!file || !wasm) return;
+
     const reader = new FileReader();
     reader.onload = () => {
+      if (!(reader.result instanceof ArrayBuffer)) return;
       const uint8Array = new Uint8Array(reader.result);
       const result = wasm.load_image(uint8Array)
       console.log(result)
@@ -34,7 +41,7 @@ export default function FileUploader() {
     <div class="flex flex-col">
       <input type="file" 
         className="file-input w-full border border-black" 
-        onChange={e => setFile(e.target.files?.item(0) ?? null)}
+        onInput={e => setFile((e.target as HTMLInputElement).files![0])}
         accept="image/*" />
       <div class="flex mt-3 gap-2">
         <button class="btn btn-primary flex-1" onClick={loadImage}>ブラウザ上で切り抜き</button>
