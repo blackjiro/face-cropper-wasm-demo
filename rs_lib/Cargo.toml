@@ -11,8 +11,11 @@ codegen-units = 1
 incremental = true
 lto = true
 opt-level = "z"
+debug = true
 
 [dependencies]
 wasm-bindgen = "=0.2.81"
 image = "0.24.5"
 rustface = "0.1.7"
+console_error_panic_hook = "0.1.7"
+wee_alloc = "0.4.5"

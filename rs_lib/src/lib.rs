@@ -1,6 +1,13 @@
+use console_error_panic_hook;
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Rgba};
 use rustface::{read_model, Detector, FaceInfo, ImageData};
 use wasm_bindgen::prelude::*;
+
+const MODEL_BYTES: &[u8] = include_bytes!("seeta_fd_frontal_v1.0.bin");
+
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub fn add(a: i32, b: i32) -> i32 {
@@ -20,6 +27,11 @@ pub fn load_image(data: &[u8]) -> u32 {
   return width + height;
 }
 
+#[wasm_bindgen]
+pub fn init_panic_hook() {
+  console_error_panic_hook::set_once();
+}
+
 fn generate_face_cropped_image(
   image: DynamicImage,
 ) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
@@ -30,7 +42,6 @@ fn generate_face_cropped_image(
 }
 
 fn build_detector() -> Box<dyn Detector> {
-  const MODEL_BYTES: &[u8] = include_bytes!("seeta_fd_frontal_v1.0.bin");
   let model = read_model(MODEL_BYTES).unwrap();
   let mut detector = rustface::create_detector_with_model(model);
   detector.set_min_face_size(20);
