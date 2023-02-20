@@ -1,12 +1,17 @@
-import { Head } from "$fresh/runtime.ts";
-import FileUploader from "../islands/FileUploader.tsx"
+import { Head,asset } from "$fresh/runtime.ts";
+import FileUploaderOpenCV from "../islands/FileUploaderOpenCV.tsx";
 
 export default function Home() {
   return (
     <>
       <Head>
         <title>顔切り抜き</title>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@2.50.1/dist/full.css" rel="stylesheet" type="text/css" />
+        <link
+          href="https://cdn.jsdelivr.net/npm/daisyui@2.50.1/dist/full.css"
+          rel="stylesheet"
+          type="text/css"
+        />
+        <script src={asset("opencv.js")} type="text/javascript"></script>
         <script src="https://cdn.tailwindcss.com"></script>
       </Head>
       <div class="p-4 mx-auto max-w-screen-md">
@@ -18,7 +23,7 @@ export default function Home() {
           />
           <span class="align-middle">顔切り抜きくん</span>
         </div>
-        <FileUploader/>
+        <FileUploaderOpenCV/>
       </div>
     </>
   );
