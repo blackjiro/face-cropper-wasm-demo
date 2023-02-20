@@ -13,7 +13,7 @@ export default function Home() {
         />
         <script src={asset("opencv.js")} type="text/javascript"></script>
         <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://docs.opencv.org/4.x/utils.js"></script>
+        <script src={asset("utils.js")}></script>
       </Head>
       <div class="p-4 mx-auto max-w-screen-md">
         <div class="flex items-center justify-center mb-6">
