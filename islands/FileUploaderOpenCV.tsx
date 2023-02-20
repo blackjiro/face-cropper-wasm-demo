@@ -9,14 +9,21 @@ declare global {
 }
 
 const { cv, Utils } = window;
+interface FaceInfo {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+const faceCascadeFile = "haarcascade_frontalface_alt.xml";
 
 export default function FileUploaderOpenCV() {
   const [file, setFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string>();
+  const [faceInfo, setFaceInfo] = useState<FaceInfo>();
 
   useEffect(() => {
     const utils = new Utils("errorMessage");
-    const faceCascadeFile = "haarcascade_frontalface_default.xml";
     utils.createFileFromUrl(faceCascadeFile, faceCascadeFile, () => {});
   }, []);
 
@@ -29,6 +36,7 @@ export default function FileUploaderOpenCV() {
   const loadImage = () => {
     if (!file) return;
 
+    // https://docs.opencv.org/3.4/d2/d99/tutorial_js_face_detection.html
     const imgElement = document.getElementById("imageSrc");
     const src = cv.imread(imgElement);
     const gray = new cv.Mat();
@@ -36,17 +44,16 @@ export default function FileUploaderOpenCV() {
     const faces = new cv.RectVector();
     const faceCascade = new cv.CascadeClassifier();
     // load pre-trained classifiers
-    faceCascade.load("haarcascade_frontalface_default.xml");
+    faceCascade.load(faceCascadeFile);
     // detect faces
     const msize = new cv.Size(0, 0);
     faceCascade.detectMultiScale(gray, faces, 1.2, 3, 0, msize, msize);
-    for (let i = 0; i < faces.size(); ++i) {
-      const point1 = new cv.Point(faces.get(i).x, faces.get(i).y);
-      const point2 = new cv.Point(
-        faces.get(i).x + faces.get(i).width,
-        faces.get(i).y + faces.get(i).height,
-      );
+    if (faces.size() > 0) {
+      const { x, y, width, height } = faces.get(0);
+      const point1 = new cv.Point(x, y);
+      const point2 = new cv.Point(x + width, y + height);
       cv.rectangle(src, point1, point2, [255, 0, 0, 255]);
+      setFaceInfo({ x, y, width, height });
     }
     cv.imshow("canvasOutput", src);
     src.delete();
@@ -84,6 +91,16 @@ export default function FileUploaderOpenCV() {
         </div>
       </div>
       <div id="errorMessage"></div>
+      {faceInfo && (
+        <div class="flex mt-3 gap-2">
+          <button class="btn btn-info flex-1">
+            ブラウザで切り抜き
+          </button>
+          <button class="btn flex-1">
+            APIで切り抜き(TBU)
+          </button>
+        </div>
+      )}
     </div>
   );
 }

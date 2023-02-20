@@ -1,5 +1,6 @@
 import { asset, Head } from "$fresh/runtime.ts";
 import FileUploaderOpenCV from "../islands/FileUploaderOpenCV.tsx";
+import FileUploader from "../islands/FileUploader.tsx";
 
 export default function Home() {
   return (
@@ -25,6 +26,8 @@ export default function Home() {
           <span class="align-middle">顔切り抜きくん</span>
         </div>
         <FileUploaderOpenCV />
+        <span class="divider"></span>
+        <FileUploader />
       </div>
     </>
   );

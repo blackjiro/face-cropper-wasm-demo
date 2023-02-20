@@ -1,28 +1,9 @@
-import { IS_BROWSER } from "$fresh/runtime.ts";
-import { instantiate } from "../lib/rs_lib.generated.js";
-import { instantiate as browserInstantiate } from "../lib/rs_lib.browser.js";
 import { useEffect, useState } from "preact/hooks";
-
-const loadWasm = async () => {
-  let wasm;
-  if (IS_BROWSER) {
-    wasm = await browserInstantiate();
-  } else {
-    wasm = await instantiate();
-  }
-  console.log("add", wasm.add(1, 2));
-  return wasm;
-};
-
-type Wasm = {
-  add: (a: number, b: number) => number;
-  load_image: (data: Uint8Array) => number;
-};
+import useWasm from "../lib/useWasm.ts";
 
 export default function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
-  const [wasm, setWasm] = useState<Wasm>();
-  useEffect(() => loadWasm().then((wasm) => setWasm(wasm)), []);
+  const wasm = useWasm();
 
   const loadImage = () => {
     if (!file || !wasm) return;

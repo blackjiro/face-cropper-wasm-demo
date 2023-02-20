@@ -14,15 +14,15 @@ pub fn add(a: i32, b: i32) -> i32 {
   return a + b;
 }
 #[wasm_bindgen]
-pub fn load_image(data: &[u8]) -> u32 {
-  let img = match image::load_from_memory(data) {
-    Ok(img) => img,
-    Err(message) => {
-      println!("Failed to read image: {}", message);
-      std::process::exit(1)
-    }
-  };
-  let cropped_img = generate_face_cropped_image(img);
+pub fn load_image(
+  data: &[u8],
+  x: u32,
+  y: u32,
+  face_width: u32,
+  face_height: u32,
+) -> u32 {
+  let img = image::load_from_memory(data).unwrap();
+  let cropped_img = crop_image_circle2(img, x, y, face_width, face_height);
   let (width, height) = cropped_img.dimensions();
   return width + height;
 }
@@ -71,6 +71,32 @@ fn crop_image_circle(
   let face_width = face.bbox().width();
   let center_x = face.bbox().x() as u32 + face_width / 2;
   let center_y = face.bbox().y() as u32 + face_height / 2;
+  let radius = ((face_width / 2) * 2).min((face_height / 2) * 2) as f32;
+
+  let mut cropped_img = ImageBuffer::new(width, height);
+
+  for (x, y, pixel) in image.pixels() {
+    let distance_from_center =
+      ((x - center_x).pow(2) + (y - center_y).pow(2)) as f32;
+    if distance_from_center <= radius.powi(2) {
+      cropped_img.put_pixel(x, y, pixel);
+    } else {
+      cropped_img.put_pixel(x, y, Rgba([0, 0, 0, 0]));
+    }
+  }
+  cropped_img
+}
+
+fn crop_image_circle2(
+  image: DynamicImage,
+  start_x: u32,
+  start_y: u32,
+  face_width: u32,
+  face_height: u32,
+) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+  let (width, height) = image.dimensions();
+  let center_x = start_x + face_width / 2;
+  let center_y = start_y + face_height / 2;
   let radius = ((face_width / 2) * 2).min((face_height / 2) * 2) as f32;
 
   let mut cropped_img = ImageBuffer::new(width, height);
