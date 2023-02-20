@@ -1,4 +1,4 @@
-import { Head,asset } from "$fresh/runtime.ts";
+import { asset, Head } from "$fresh/runtime.ts";
 import FileUploaderOpenCV from "../islands/FileUploaderOpenCV.tsx";
 
 export default function Home() {
@@ -24,7 +24,7 @@ export default function Home() {
           />
           <span class="align-middle">顔切り抜きくん</span>
         </div>
-        <FileUploaderOpenCV/>
+        <FileUploaderOpenCV />
       </div>
     </>
   );
