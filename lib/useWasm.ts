@@ -3,8 +3,7 @@ import { useEffect, useState } from "preact/hooks";
 
 export interface Wasm {
   add: (a: number, b: number) => number;
-  load_image: (data: Uint8Array) => number;
-  init_panic_hook: () => void;
+  load_image: (data: Uint8Array, x: number, y: number, width: number, height: number) => number;
 }
 
 export const useWasm = () => {

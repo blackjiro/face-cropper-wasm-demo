@@ -1,5 +1,6 @@
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { useEffect, useState } from "preact/hooks";
+import useWasm from "../lib/useWasm.ts";
 
 declare global {
   interface Window {
@@ -21,6 +22,7 @@ export default function FileUploaderOpenCV() {
   const [file, setFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string>();
   const [faceInfo, setFaceInfo] = useState<FaceInfo>();
+  const wasm = useWasm();
 
   useEffect(() => {
     const utils = new Utils("errorMessage");
@@ -62,6 +64,21 @@ export default function FileUploaderOpenCV() {
     faces.delete();
   };
 
+
+  const cropImage = () => {
+    if (!file || !wasm) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!(reader.result instanceof ArrayBuffer)) return;
+      const uint8Array = new Uint8Array(reader.result);
+      const result = wasm.load_image(uint8Array, faceInfo!.x, faceInfo!.y, faceInfo!.width, faceInfo!.height);
+      console.log(result);
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+
   return (
     <div class="flex flex-col">
       <input
@@ -93,7 +110,7 @@ export default function FileUploaderOpenCV() {
       <div id="errorMessage"></div>
       {faceInfo && (
         <div class="flex mt-3 gap-2">
-          <button class="btn btn-info flex-1">
+          <button class="btn btn-info flex-1" onClick={cropImage}>
             ブラウザで切り抜き
           </button>
           <button class="btn flex-1">
