@@ -61,7 +61,7 @@ export default function FileUploaderOpenCV() {
     faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, msize, msize);
     if (faces.size() > 0) {
       const { x, y, width, height } = faces.get(0);
-      const radius_on_x = (Math.min(width, height) / 2) / src.cols;
+      const radius_on_x = (Math.min(width, height) /1.8) / src.cols;
       const centerPoint = {
         center_x: (x + width / 2) / src.cols,
         center_y: (y + height / 2) / src.rows,
@@ -113,7 +113,7 @@ export default function FileUploaderOpenCV() {
         type="file"
         className="file-input w-full border border-black"
         onInput={(e) => setFile((e.target as HTMLInputElement).files![0])}
-        accept="image/*"
+        accept="image/png"
       />
       <div class="flex mt-3 gap-2">
         <button class="btn btn-primary flex-1" onClick={loadImage}>
