@@ -4,8 +4,8 @@ import { instantiate } from "./rs_lib.generated.js";
 export const loadWasm = async () => {
   let wasm;
   if (IS_BROWSER) {
-    const url = new URL("/rs_lib_bg.wasm",import.meta.url);
-    wasm = await instantiate({url} )
+    const url = new URL("/rs_lib_bg.wasm", import.meta.url);
+    wasm = await instantiate({ url });
   } else {
     wasm = await instantiate();
   }

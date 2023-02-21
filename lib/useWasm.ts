@@ -3,7 +3,14 @@ import { useEffect, useState } from "preact/hooks";
 
 export interface Wasm {
   add: (a: number, b: number) => number;
-  load_image: (data: Uint8Array, x: number, y: number, width: number, height: number) => number;
+  load_image: (
+    data: Uint8Array,
+    x: number,
+    y: number,
+    face_width: number,
+    face_height: number,
+  ) => string;
+  crop_face: (data: Uint8Array) => number;
 }
 
 export const useWasm = () => {
@@ -12,10 +19,10 @@ export const useWasm = () => {
     (async () => {
       const customWasm = await loadWasm();
       setWasm(customWasm as Wasm);
-      console.log("add", customWasm.add(1, 2))
+      console.log("add", customWasm.add(1, 2));
     })();
   }, []);
-    return wasm
+  return wasm;
 };
 
-export default useWasm
+export default useWasm;

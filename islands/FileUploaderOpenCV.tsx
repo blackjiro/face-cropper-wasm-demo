@@ -22,6 +22,7 @@ export default function FileUploaderOpenCV() {
   const [file, setFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string>();
   const [faceInfo, setFaceInfo] = useState<FaceInfo>();
+  const [base64Png, setBase64Png] = useState<string>();
   const wasm = useWasm();
 
   useEffect(() => {
@@ -64,7 +65,6 @@ export default function FileUploaderOpenCV() {
     faces.delete();
   };
 
-
   const cropImage = () => {
     if (!file || !wasm) return;
 
@@ -72,12 +72,17 @@ export default function FileUploaderOpenCV() {
     reader.onload = () => {
       if (!(reader.result instanceof ArrayBuffer)) return;
       const uint8Array = new Uint8Array(reader.result);
-      const result = wasm.load_image(uint8Array, faceInfo!.x, faceInfo!.y, faceInfo!.width, faceInfo!.height);
-      console.log(result);
+      const result = wasm.load_image(
+        uint8Array,
+        faceInfo!.x,
+        faceInfo!.y,
+        faceInfo!.width,
+        faceInfo!.height,
+      );
+      setBase64Png(result);
     };
     reader.readAsArrayBuffer(file);
   };
-
 
   return (
     <div class="flex flex-col">
@@ -116,6 +121,11 @@ export default function FileUploaderOpenCV() {
           <button class="btn flex-1">
             APIで切り抜き(TBU)
           </button>
+        </div>
+      )}
+      {base64Png && (
+        <div class="flex justify-center mt-6">
+          <img src={base64Png} />
         </div>
       )}
     </div>

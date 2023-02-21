@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose, Engine as _};
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Rgba};
 use rustface::{read_model, Detector, FaceInfo, ImageData};
 use wasm_bindgen::prelude::*;
@@ -17,11 +18,21 @@ pub fn load_image(
   y: u32,
   face_width: u32,
   face_height: u32,
-) -> u32 {
+) -> String {
   let img = image::load_from_memory(data).unwrap();
   let cropped_img = crop_image_circle(img, x, y, face_width, face_height);
-  let (width, height) = cropped_img.dimensions();
-  return width + height;
+  get_base64(cropped_img)
+}
+fn get_base64(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
+  let mut buffer = vec![];
+  let dynamic_image = image::DynamicImage::ImageRgba8(img);
+  dynamic_image
+    .write_to(&mut buffer, image::ImageOutputFormat::Png)
+    .unwrap();
+  let base64 = general_purpose::STANDARD_NO_PAD.encode(&buffer);
+  let res_base64 =
+    format!("data:image/png;base64,{}", base64.replace("\r\n", ""));
+  res_base64
 }
 
 #[wasm_bindgen]
