@@ -2,8 +2,6 @@ use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Rgba};
 use rustface::{read_model, Detector, FaceInfo, ImageData};
 use wasm_bindgen::prelude::*;
 
-const MODEL_BYTES: &[u8] = include_bytes!("seeta_fd_frontal_v1.0.bin");
-
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -21,12 +19,59 @@ pub fn load_image(
   face_height: u32,
 ) -> u32 {
   let img = image::load_from_memory(data).unwrap();
-  let cropped_img = crop_image_circle2(img, x, y, face_width, face_height);
+  let cropped_img = crop_image_circle(img, x, y, face_width, face_height);
   let (width, height) = cropped_img.dimensions();
   return width + height;
 }
 
-fn crop_image_circle2(
+#[wasm_bindgen]
+pub fn crop_face(data: &[u8]) -> u32 {
+  let img = image::load_from_memory(data).unwrap();
+  //let cropped_img = crop_image_circle2(img, x, y, face_width, face_height);
+  let cropped_img = generate_face_cropped_image(img);
+  let (width, height) = cropped_img.dimensions();
+  return width + height;
+}
+
+fn generate_face_cropped_image(
+  image: DynamicImage,
+) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+  let mut detector = build_detector();
+  let face = detect_single_face(&mut *detector, &image.to_luma8());
+  let x = face.bbox().x() as u32;
+  let y = face.bbox().y() as u32;
+  let width = face.bbox().width();
+  let height = face.bbox().height();
+  let cropped_img = crop_image_circle(image, x, y, width, height);
+  cropped_img
+}
+fn get_model_bytes() -> &'static [u8] {
+  include_bytes!("./seeta_fd_frontal_v1.0.bin")
+}
+
+fn build_detector() -> Box<dyn Detector> {
+  let model_bytes: &[u8] = get_model_bytes();
+  let model = read_model(model_bytes).unwrap();
+  let mut detector = rustface::create_detector_with_model(model);
+  detector.set_min_face_size(20);
+  detector.set_score_thresh(2.0);
+  detector.set_pyramid_scale_factor(0.8);
+  detector.set_slide_window_step(4, 4);
+  detector
+}
+
+fn detect_single_face(
+  detector: &mut dyn Detector,
+  gray: &GrayImage,
+) -> FaceInfo {
+  let (width, height) = gray.dimensions();
+  let mut image = ImageData::new(gray, width, height);
+  let faces = detector.detect(&mut image);
+  println!("Found {} faces", faces.len(),);
+  faces[0].clone()
+}
+
+fn crop_image_circle(
   image: DynamicImage,
   start_x: u32,
   start_y: u32,
