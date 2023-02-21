@@ -1,6 +1,10 @@
-# fresh project
+# face-cropper-wasm-demo
 
-### Usage
+## site
+
+<https://face-cropper-demo.deno.dev/>
+
+## Development
 
 Start the project:
 
@@ -8,5 +12,3 @@ Start the project:
 deno task wasmbuild
 deno task start
 ```
-
-This will watch the project directory and restart as necessary.
