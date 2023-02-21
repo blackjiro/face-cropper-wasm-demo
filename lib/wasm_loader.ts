@@ -1,11 +1,11 @@
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { instantiate } from "./rs_lib.generated.js";
-import { instantiate as browserInstantiate } from "./rs_lib.browser.js";
 
 export const loadWasm = async () => {
   let wasm;
   if (IS_BROWSER) {
-    wasm = await browserInstantiate();
+    const url = new URL("/rs_lib_bg.wasm",import.meta.url);
+    wasm = await instantiate({url} )
   } else {
     wasm = await instantiate();
   }
