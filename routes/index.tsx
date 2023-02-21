@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>顔切り抜き</title>
+        <title>Face Crop Demo</title>
         <link
           href="https://cdn.jsdelivr.net/npm/daisyui@2.50.1/dist/full.css"
           rel="stylesheet"
@@ -19,10 +19,10 @@ export default function Home() {
         <div class="flex items-center justify-center mb-6">
           <img
             src="/logo.svg"
-            class="w-20 h-20"
+            class="w-10 h-10"
             alt="the fresh logo: a sliced lemon dripping with juice"
           />
-          <span class="align-middle">顔切り抜きくん</span>
+          <span class="align-middle ml-3">Face Crop Demo</span>
         </div>
         <FileUploaderOpenCV />
       </div>
