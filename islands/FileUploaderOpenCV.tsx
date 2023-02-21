@@ -16,12 +16,20 @@ interface FaceInfo {
   width: number;
   height: number;
 }
+
+interface FaceCircleRatioInfo {
+  center_x: number;
+  center_y: number;
+  radius_on_x: number;
+}
+
 const faceCascadeFile = "haarcascade_frontalface_alt.xml";
 
 export default function FileUploaderOpenCV() {
   const [file, setFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string>();
   const [faceInfo, setFaceInfo] = useState<FaceInfo>();
+  const [faceRatioInfo, setFaceRatioInfo] = useState<FaceCircleRatioInfo>();
   const [base64Png, setBase64Png] = useState<string>();
   const wasm = useWasm();
 
@@ -50,9 +58,17 @@ export default function FileUploaderOpenCV() {
     faceCascade.load(faceCascadeFile);
     // detect faces
     const msize = new cv.Size(0, 0);
-    faceCascade.detectMultiScale(gray, faces, 1.2, 3, 0, msize, msize);
+    faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, msize, msize);
     if (faces.size() > 0) {
       const { x, y, width, height } = faces.get(0);
+      const radius_on_x = (Math.min(width, height) / 2) / src.cols;
+      const centerPoint = {
+        center_x: (x + width / 2) / src.cols,
+        center_y: (y + height / 2) / src.rows,
+        radius_on_x,
+      };
+      setFaceRatioInfo(centerPoint);
+      console.log(centerPoint);
       const point1 = new cv.Point(x, y);
       const point2 = new cv.Point(x + width, y + height);
       cv.rectangle(src, point1, point2, [255, 0, 0, 255]);
@@ -72,14 +88,21 @@ export default function FileUploaderOpenCV() {
     reader.onload = () => {
       if (!(reader.result instanceof ArrayBuffer)) return;
       const uint8Array = new Uint8Array(reader.result);
-      const result = wasm.load_image(
+      // const result = wasm.load_image(
+      //   uint8Array,
+      //   faceInfo!.x,
+      //   faceInfo!.y,
+      //   faceInfo!.width,
+      //   faceInfo!.height,
+      // );
+      const result2 = wasm.load_image2(
         uint8Array,
-        faceInfo!.x,
-        faceInfo!.y,
-        faceInfo!.width,
-        faceInfo!.height,
+        faceRatioInfo!.center_x,
+        faceRatioInfo!.center_y,
+        faceRatioInfo!.radius_on_x,
       );
-      setBase64Png(result);
+      // const result3 = wasm.crop_face(uint8Array);
+      setBase64Png(result2);
     };
     reader.readAsArrayBuffer(file);
   };

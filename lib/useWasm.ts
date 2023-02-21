@@ -10,6 +10,12 @@ export interface Wasm {
     face_width: number,
     face_height: number,
   ) => string;
+  load_image2: (
+    data: Uint8Array,
+    center_x: number,
+    center_y: number,
+    radius_on_x: number,
+  ) => string;
   crop_face: (data: Uint8Array) => number;
 }
 

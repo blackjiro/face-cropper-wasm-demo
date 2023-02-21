@@ -23,6 +23,28 @@ pub fn load_image(
   let cropped_img = crop_image_circle(img, x, y, face_width, face_height);
   get_base64(cropped_img)
 }
+
+#[wasm_bindgen]
+pub fn load_image2(
+  data: &[u8],
+  center_x: f32,
+  center_y: f32,
+  radius_on_x: f32,
+) -> String {
+  let img = image::load_from_memory(data).unwrap();
+  let cropped_img =
+    crop_image_circle_by_ratio(img, center_x, center_y, radius_on_x);
+  get_base64(cropped_img)
+}
+
+#[wasm_bindgen]
+pub fn crop_face(data: &[u8]) -> u32 {
+  let img = image::load_from_memory(data).unwrap();
+  let cropped_img = generate_face_cropped_image(img);
+  let (width, height) = cropped_img.dimensions();
+  return width + height;
+}
+
 fn get_base64(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
   let mut buffer = vec![];
   let dynamic_image = image::DynamicImage::ImageRgba8(img);
@@ -33,15 +55,6 @@ fn get_base64(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
   let res_base64 =
     format!("data:image/png;base64,{}", base64.replace("\r\n", ""));
   res_base64
-}
-
-#[wasm_bindgen]
-pub fn crop_face(data: &[u8]) -> u32 {
-  let img = image::load_from_memory(data).unwrap();
-  //let cropped_img = crop_image_circle2(img, x, y, face_width, face_height);
-  let cropped_img = generate_face_cropped_image(img);
-  let (width, height) = cropped_img.dimensions();
-  return width + height;
 }
 
 fn generate_face_cropped_image(
@@ -93,6 +106,31 @@ fn crop_image_circle(
   let center_x = start_x + face_width / 2;
   let center_y = start_y + face_height / 2;
   let radius = ((face_width / 2) * 2).min((face_height / 2) * 2) as f32;
+
+  let mut cropped_img = ImageBuffer::new(width, height);
+
+  for (x, y, pixel) in image.pixels() {
+    let distance_from_center =
+      ((x - center_x).pow(2) + (y - center_y).pow(2)) as f32;
+    if distance_from_center <= radius.powi(2) {
+      cropped_img.put_pixel(x, y, pixel);
+    } else {
+      cropped_img.put_pixel(x, y, Rgba([0, 0, 0, 0]));
+    }
+  }
+  cropped_img
+}
+
+fn crop_image_circle_by_ratio(
+  image: DynamicImage,
+  center_x: f32,
+  center_y: f32,
+  radius_on_x: f32,
+) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+  let (width, height) = image.dimensions();
+  let center_x = (width as f32 * center_x).floor() as u32;
+  let center_y = (height as f32 * center_y).floor() as u32;
+  let radius = radius_on_x * width as f32;
 
   let mut cropped_img = ImageBuffer::new(width, height);
 
