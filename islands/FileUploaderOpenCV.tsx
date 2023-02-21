@@ -25,6 +25,23 @@ interface FaceCircleRatioInfo {
 
 const faceCascadeFile = "haarcascade_frontalface_alt.xml";
 
+const sendMultipartImage = async (
+  blob: Blob,
+  faceInfo: FaceCircleRatioInfo,
+) => {
+  const formData = new FormData();
+  formData.append("image", blob);
+  formData.append("center_x", faceInfo.center_x.toString());
+  formData.append("center_y", faceInfo.center_y.toString());
+  formData.append("radius_on_x", faceInfo.radius_on_x.toString());
+  const response = await fetch("/api/crop_face", {
+    method: "POST",
+    body: formData,
+  });
+  const result = await response.json();
+  return result.image;
+};
+
 export default function FileUploaderOpenCV() {
   const [file, setFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string>();
@@ -61,7 +78,7 @@ export default function FileUploaderOpenCV() {
     faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, msize, msize);
     if (faces.size() > 0) {
       const { x, y, width, height } = faces.get(0);
-      const radius_on_x = (Math.min(width, height) /1.8) / src.cols;
+      const radius_on_x = (Math.min(width, height) / 1.8) / src.cols;
       const centerPoint = {
         center_x: (x + width / 2) / src.cols,
         center_y: (y + height / 2) / src.rows,
@@ -107,6 +124,12 @@ export default function FileUploaderOpenCV() {
     reader.readAsArrayBuffer(file);
   };
 
+  const cropImageOnApi = async () => {
+    if (!file || !wasm) return;
+    const result = await sendMultipartImage(file!, faceRatioInfo!);
+    setBase64Png(result);
+  };
+
   return (
     <div class="flex flex-col">
       <input
@@ -141,7 +164,7 @@ export default function FileUploaderOpenCV() {
           <button class="btn btn-info flex-1" onClick={cropImage}>
             ブラウザで切り抜き
           </button>
-          <button class="btn flex-1">
+          <button class="btn flex-1" onClick={cropImageOnApi}>
             APIで切り抜き(TBU)
           </button>
         </div>
